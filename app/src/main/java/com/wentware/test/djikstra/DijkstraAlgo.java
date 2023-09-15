@@ -2,17 +2,21 @@ package com.wentware.test.djikstra;
 
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
-import static java.lang.System.out;
 import static java.util.function.Predicate.not;
 
 @Data
 public class DijkstraAlgo {
+
+    Logger log = LogManager.getLogger(DijkstraAlgo.class);
     final String sourceNodeId;
     final String goalNodeId;
     final Graph graph;
@@ -58,15 +62,19 @@ public class DijkstraAlgo {
                 } else {
                     //im done?
                     if (current.getPrevDNode() == null) {
-                        throw new Exception("Failed to find path with bad graph");
+                        String message = "Failed to find path with bad graph";
+                        log.error(message);
+                        throw new Exception(message);
                     }
                     int costFromSource = current.getCostFromSource();
-                    out.println("Found " + current.getGNode().getId() + " with weight " + costFromSource);
+                    log.info("Found goal " + current.getGNode().getId() + " with cost " + costFromSource + " from source " + getSourceNodeId());
                     List<Graph.Node> path = computePath(current);
                     return new Solution(path, costFromSource);
                 }
             } else {
-                throw new Exception("Failed to compute");
+                String message = "Failed to compute";
+                log.error(message);
+                throw new Exception(message);
             }
 
         }
@@ -83,11 +91,13 @@ public class DijkstraAlgo {
 
     private List<Graph.Node> computePath(DNode dNode) {
         List<Graph.Node> path = new ArrayList<>();
+        path.add(dNode.getGNode());
         DNode backDNode = dNode.getPrevDNode();
         do {
             path.add(backDNode.getGNode());
             backDNode = backDNode.getPrevDNode();
         } while (backDNode != null);
+        Collections.reverse(path);
         return path;
     }
 

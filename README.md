@@ -9,7 +9,7 @@ command line
 
 # build
 ```bash
-./gradlew app:jar
+./gradlew app:fatJar
 ```
 # test
 example graph
@@ -18,5 +18,4 @@ example graph
 
 # run
 ```bash
-java  -jar app/build/libs/app.jar V1 V4 V1,V2,3 V1,V3,2 V2,V3,1 V2,V4,2 V3,V4,4 
-```
+java  -jar app/build/libs/app-all.jar N1 N4 N1,N2,3 N1,N3,2 N2,N3,5 N2,N4,2 N3,N4,4```

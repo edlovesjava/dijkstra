@@ -21,7 +21,7 @@ class AppTest {
     }
 
     @Test
-    void parseGoodData() throws Exception {
+    void parse_withGoodData() throws Exception {
         String[] args = Fixture.GRAPH_DEF;
 
         Graph g = classUnderTest.parse(args);
@@ -37,7 +37,7 @@ class AppTest {
     }
 
     @Test
-    void run() {
+    void run_withGoodGraph() throws Exception {
 
         DijkstraAlgo algo = createAlgo();
         DijkstraAlgo.Solution solution = algo.traverse();
@@ -54,7 +54,7 @@ class AppTest {
         assertTrue(solution.path().contains(v2));
     }
 
-    private DijkstraAlgo createAlgo() {
+    private DijkstraAlgo createAlgo() throws Exception {
         Graph graph = Fixture.createTestGraph();
         return new DijkstraAlgo(graph,"V1", "V4");
     }

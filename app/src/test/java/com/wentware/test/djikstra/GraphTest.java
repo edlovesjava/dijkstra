@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class GraphTest {
 
     @Test
-    void addVertByName() {
+    void addVertByName_withDup_shouldNotAddDup() {
         Graph graph = new Graph();
         graph.addVert("V1");
         graph.addVert("V1");

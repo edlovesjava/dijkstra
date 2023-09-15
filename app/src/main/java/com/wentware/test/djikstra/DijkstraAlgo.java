@@ -1,84 +1,84 @@
 package com.wentware.test.djikstra;
 
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 import static java.lang.System.out;
 import static java.util.function.Predicate.not;
 
 @Data
 public class DijkstraAlgo {
-    private final String sourceName;
-    private final String goalName;
-    Graph graph;
+    final String sourceName;
+    final String goalName;
+    final Graph graph;
+
     List<DijVert> dijVertices;
     DijVert dijSource;
     DijVert dijGoal;
 
-    public DijkstraAlgo(Graph g, String sourceName, String goalName) {
+    public DijkstraAlgo(Graph g, String sourceName, String goalName) throws Exception {
          this.graph = g;
          this.sourceName = sourceName;
          this.goalName = goalName;
          init();
     }
 
-    void init() {
+    private static Exception getNoSourceException(String sourceName) {
+        return new Exception(String.format("Failed to find source by name %s", sourceName));
+    }
+
+    private static Exception getNoGoalException(String goalName) {
+        return new Exception(String.format("Failed to find goal by name %s",goalName));
+    }
+
+    private void init() throws Exception {
         dijVertices = graph.getVertices()
                 .stream()
                 .map(DijVert::new)
                 .toList();
-        Vert source = graph.findVertByName(getSourceName()).orElseThrow();
-        Vert goal = graph.findVertByName(getGoalName()).orElseThrow();
-        dijSource = getDijVert(source);
+        dijSource = findDijVertByGVert(graph.findVertByName(getSourceName()).orElseThrow(() -> getNoSourceException(getSourceName())));
         dijSource.setCostFromSource(0);
-        dijGoal = getDijVert(goal);
+        dijGoal = findDijVertByGVert(graph.findVertByName(getGoalName()).orElseThrow(() -> getNoGoalException(getGoalName())));
     }
 
-    private DijVert getDijVert(Vert source) {
-        return dijVertices.stream()
-                .filter(dv -> dv.getGVert().equals(source))
-                .findFirst()
-                .orElseThrow();
-    }
+    public Solution traverse() throws Exception {
 
-    @Data
-    static class DijVert {
-        Vert gVert;
-        DijVert prevDVert;
-        int costFromSource = Integer.MAX_VALUE;
-        boolean visited;
+        while (true) {
+            Optional<DijVert> currentVertOpt = getNextVert();
 
-        DijVert(Vert gVert) {
-            this.gVert = gVert;
-        }
-    }
-
-    record Solution(List<Vert> path, int cost) {
-    }
-
-    public Solution traverse() {
-        int bestCost = 0;
-        List<Vert> path = new ArrayList<>();
-        boolean done = false;
-        while (!done) {
-            DijVert currentVert = getNextVert();
-            out.println("Visiting vert " + currentVert.getGVert().getName());
-            if (!getDijGoal().equals(currentVert)) { // keep looking
-                visitAll(currentVert);
+            if (currentVertOpt.isPresent()) {
+                DijVert currentVert = currentVertOpt.get();
+                if (!getDijGoal().equals(currentVert)) { // keep looking
+                    visitAll(currentVert);
+                } else {
+                    //im done?
+                    if (currentVert.getPrevDVert() == null) {
+                        throw new Exception("Failed to find path with bad graph");
+                    }
+                    int costFromSource = currentVert.getCostFromSource();
+                    out.println("Found " + currentVert.getGVert().getName() + " with weight " + costFromSource);
+                    List<Vert> path = computePath(currentVert);
+                    return new Solution(path, costFromSource);
+                }
             } else {
-                //im done
-                bestCost = currentVert.getCostFromSource();
-                out.println("Found " + currentVert.getGVert().getName() + " with weight " + currentVert.getCostFromSource());
-                done = true;
-                path = computePath(currentVert);
-
+                throw new Exception("Failed to compute");
             }
 
         }
-        return new Solution(path, bestCost);
+    }
+
+    Optional<DijVert> getNextVert() {
+        //not yet visited, lowest
+        return this.dijVertices
+                .stream()
+                .filter(not(DijVert::isVisited))
+                .min(Comparator.comparingInt(DijVert::getCostFromSource));
+
     }
 
     private List<Vert> computePath(DijVert currentVert) {
@@ -92,32 +92,45 @@ public class DijkstraAlgo {
         return path;
     }
 
-    void visitAll(DijVert fromVert) {
+    private void visitAll(DijVert fromVert) {
         for(Edge e : fromVert.getGVert().getEdges()) {
-            DijVert toVert = getDijVert(e.getToVert());
+            DijVert toVert = findDijVertByGVert(e.getToVert());
             visit(toVert, fromVert, e.getWeight());
         }
         fromVert.setVisited(true);
     }
 
-    void visit(DijVert dijVert, DijVert fromVert, int edgeWeight) {
+    private void visit(DijVert dijVert, DijVert fromVert, int edgeWeight) {
         if (fromVert != null) {
-            int newWeight = fromVert.getCostFromSource() + edgeWeight;
-            if (newWeight < dijVert.getCostFromSource()) {
-                dijVert.setCostFromSource(newWeight);
-                dijVert.setPrevDVert(fromVert);
+            int newCost = fromVert.getCostFromSource() + edgeWeight;
+            if (newCost < dijVert.getCostFromSource()) {
+                dijVert.updateCost(fromVert, newCost);
             }
         }
     }
 
-    public DijVert getNextVert() {
-        //not yet visited, lowest
-        return this.dijVertices
-                .stream()
-                .filter(not(DijVert::isVisited))
-                .min(Comparator.comparingInt(DijVert::getCostFromSource))
+    private DijVert findDijVertByGVert(Vert gVert) {
+        return dijVertices.stream()
+                .filter(dv -> dv.getGVert().equals(gVert))
+                .findFirst()
                 .orElseThrow();
+    }
 
+    @Data
+    @RequiredArgsConstructor
+    static class DijVert {
+        final Vert gVert;
+        DijVert prevDVert;
+        int costFromSource = Integer.MAX_VALUE;
+        boolean visited;
+
+        private void updateCost(DijVert fromVert, int newWeight) {
+            setCostFromSource(newWeight);
+            setPrevDVert(fromVert);
+        }
+    }
+
+    record Solution(List<Vert> path, int cost) {
     }
 
 }

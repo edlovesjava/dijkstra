@@ -6,18 +6,15 @@ package com.wentware.test.djikstra;
 import java.util.Arrays;
 import java.util.Scanner;
 
-import static java.lang.System.out;
-
 public class App {
-
     public static void main(String[] args) {
         App app = new App();
         int response = app.run(args);
         System.exit(response);
     }
 
-    private int run(String[] args)  {
-        out.println("Starting dijkstra path finder");
+    int run(String[] args)  {
+        System.out.println("Starting dijkstra path finder");
         try {
             if (args.length < 3) {
                 System.out.println("cmd ::= sourceNodeId destNodeId edgeTriplet...");
@@ -29,9 +26,9 @@ public class App {
             String[] remainingArgs = Arrays.copyOfRange(args, 2, args.length);
             Graph graph = parse(remainingArgs);
             DijkstraAlgo algo = new DijkstraAlgo(graph, sourceNodeId, destNodeId);
-            DijkstraAlgo.Solution solution = algo.traverse();
-            out.println("Cost was " + solution.cost());
-            out.println("Path was " + solution.path());
+            DijkstraAlgo.Solution solution = algo.solve();
+            System.out.println("Cost was " + solution.cost());
+            System.out.println("Path was " + solution.path());
             return 0;
         } catch (Exception e) {
             System.err.println(e.getMessage());

@@ -10,8 +10,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-
-import static java.util.function.Predicate.not;
+import java.util.PriorityQueue;
 
 @Data
 public class DijkstraAlgo {
@@ -22,6 +21,8 @@ public class DijkstraAlgo {
     final Graph graph;
 
     List<DNode> dNodes;
+    PriorityQueue<DNode> toVisit;
+    List<DNode> visited;
     DNode sourceDNode;
     DNode goalDNode;
 
@@ -41,6 +42,7 @@ public class DijkstraAlgo {
     }
 
     private void init() throws Exception {
+        toVisit = new PriorityQueue<>(Comparator.comparingInt(DNode::getCostFromSource));
         dNodes = graph.getNodes()
                 .stream()
                 .map(DNode::new)
@@ -48,9 +50,12 @@ public class DijkstraAlgo {
         sourceDNode = findDNodeByNode(graph.findNodeById(getSourceNodeId()).orElseThrow(() -> getNoSourceException(getSourceNodeId())));
         sourceDNode.setCostFromSource(0);
         goalDNode = findDNodeByNode(graph.findNodeById(getGoalNodeId()).orElseThrow(() -> getNoGoalException(getGoalNodeId())));
+        this.toVisit.addAll(dNodes);
+        this.visited = new ArrayList<>();
+
     }
 
-    public Solution traverse() throws Exception {
+    public Solution solve() throws Exception {
 
         while (true) {
             Optional<DNode> currentDNodeOpt = getNext();
@@ -76,17 +81,12 @@ public class DijkstraAlgo {
                 log.error(message);
                 throw new Exception(message);
             }
-
         }
     }
 
     Optional<DNode> getNext() {
         //not yet visited, lowest
-        return this.dNodes
-                .stream()
-                .filter(not(DNode::isVisited))
-                .min(Comparator.comparingInt(DNode::getCostFromSource));
-
+        return Optional.ofNullable(getToVisit().remove());
     }
 
     private List<Graph.Node> computePath(DNode dNode) {
@@ -106,7 +106,7 @@ public class DijkstraAlgo {
             DNode toDNode = findDNodeByNode(e.getToNode());
             visit(fromDNode, toDNode, e.getWeight());
         }
-        fromDNode.setVisited(true);
+        visited.add(fromDNode);
     }
 
     private void visit(DNode fromDNode, DNode toDNode, int edgeWeight) {
@@ -131,7 +131,6 @@ public class DijkstraAlgo {
         final Graph.Node gNode;
         DNode prevDNode;
         int costFromSource = Integer.MAX_VALUE;
-        boolean visited;
 
         private void updateCost(DNode fromDNode, int newWeight) {
             setCostFromSource(newWeight);

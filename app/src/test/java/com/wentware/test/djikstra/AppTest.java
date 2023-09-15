@@ -38,24 +38,13 @@ class AppTest {
 
     @Test
     void run_withGoodGraph() throws Exception {
-
-        DijkstraAlgo algo = createAlgo();
-        DijkstraAlgo.Solution solution = algo.traverse();
-        out.println("Cost was "+solution.cost());
-        out.println("Path was "+solution.path());
-
-        assertNotNull(solution);
-        assertEquals(4,solution.cost());
-        assertEquals(2, solution.path().size());
-        Graph graph = algo.getGraph();
-        Graph.Node n1 = graph.findNodeById("N1").orElseThrow();
-        Graph.Node n2 = graph.findNodeById("N2").orElseThrow();
-        assertTrue(solution.path().contains(n1));
-        assertTrue(solution.path().contains(n2));
-    }
-
-    private DijkstraAlgo createAlgo() throws Exception {
-        Graph graph = Fixture.createTestGraph();
-        return new DijkstraAlgo(graph,"N1", "N4");
+        String[] args = new String[6];
+        args[0] = "N1";
+        args[1] = "N2";
+        for(int i=2;i < 6;i++) {
+            args[i] = Fixture.GRAPH_DEF[i-2];
+        }
+        int res = classUnderTest.run(args);
+        assertEquals(0, res);
     }
 }

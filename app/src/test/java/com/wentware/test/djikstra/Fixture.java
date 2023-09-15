@@ -17,13 +17,13 @@ public final class Fixture {
         Graph testGraph = new Graph();
         Graph.Node n4 = testGraph.addNode("N4");
         Graph.Node n3 = testGraph.addNode("N3")
-                .addEdgeTo(n4, 2);
+                .addEdgeTo(n4, 4);
         Graph.Node n2 = testGraph.addNode("N2")
-                .addEdgeTo(n4, 1)
-                .addEdgeTo(n3,2);
+                .addEdgeTo(n4, 2)
+                .addEdgeTo(n3,1);
         testGraph.addNode("N1")
                 .addEdgeTo(n2, 3)
-                .addEdgeTo(n3,4);
+                .addEdgeTo(n3,2);
         return testGraph;
     }
 }

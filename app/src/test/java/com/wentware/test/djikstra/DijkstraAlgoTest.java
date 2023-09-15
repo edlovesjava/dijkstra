@@ -17,7 +17,7 @@ class DijkstraAlgoTest {
     @BeforeEach
     void setup() throws Exception {
         Graph graph = Fixture.createTestGraph();
-        classUnderTest = new DijkstraAlgo(graph, "V1", "V4");
+        classUnderTest = new DijkstraAlgo(graph, "N1", "N4");
     }
 
     @Test
@@ -31,56 +31,61 @@ class DijkstraAlgoTest {
     @Test
     void init_noGoal_shouldThrow() {
         Graph graph = Fixture.createTestGraph();
-        Exception e = assertThrows(Exception.class, () -> new DijkstraAlgo(graph, "V1", "Vx"));
-        assertEquals("Failed to find goal by name Vx", e.getMessage());
+        Exception e = assertThrows(Exception.class, () -> new DijkstraAlgo(graph, "N1", "Nx"));
+        assertEquals("Failed to find goal by name Nx", e.getMessage());
     }
 
     @Test
     void traverse_withIsolatedVertex_shouldThrowf() throws Exception {
-        Graph testGraph = new Graph();
-        Vert vert5 = testGraph.addVert("V5");
-        Vert vert4 = testGraph.addVert("V4");
-        Vert vert3 = testGraph.addVert("V3")
-                .addEdgeTo(vert4, 2);
-        Vert vert2 = testGraph.addVert("V2")
-                .addEdgeTo(vert4, 1)
-                .addEdgeTo(vert3,2);
-        testGraph.addVert("V1")
-                .addEdgeTo(vert2, 3)
-                .addEdgeTo(vert3,4);
-        DijkstraAlgo dijkstraAlgoWBadGoal = new DijkstraAlgo(testGraph, "V1", "V5");
+        Graph testGraph = createBadGraph();
+        DijkstraAlgo dijkstraAlgoWBadGoal = new DijkstraAlgo(testGraph, "N1", "N5");
 
         Exception badGraphException = assertThrows(Exception.class, dijkstraAlgoWBadGoal::traverse);
 
         assertEquals("Failed to find path with bad graph", badGraphException.getMessage());
     }
 
+    private Graph createBadGraph() {
+        Graph testGraph = new Graph();
+        Graph.Node n5 = testGraph.addNode("N5");
+        Graph.Node n4 = testGraph.addNode("N4");
+        Graph.Node n3 = testGraph.addNode("N3")
+                .addEdgeTo(n4, 2);
+        Graph.Node n2 = testGraph.addNode("N2")
+                .addEdgeTo(n4, 1)
+                .addEdgeTo(n3,2);
+        testGraph.addNode("N1")
+                .addEdgeTo(n2, 3)
+                .addEdgeTo(n3,4);
+        return testGraph;
+    }
+
     @Test
     void traverse() throws Exception {
         Graph graph = Fixture.createTestGraph();
 
-        classUnderTest = new DijkstraAlgo(graph, "V1", "V4");
+        classUnderTest = new DijkstraAlgo(graph, "N1", "N4");
         DijkstraAlgo.Solution solution = classUnderTest.traverse();
 
         assertNotNull(solution);
         assertEquals(4, solution.cost());
         assertEquals(2, solution.path().size());
-        Vert vert1 = graph.findVertByName("V1").orElseThrow();
-        Vert vert2 = graph.findVertByName("V2").orElseThrow();
-        assertTrue(solution.path().contains(vert1));
-        assertTrue(solution.path().contains(vert2));
+        Graph.Node n1 = graph.findNodeById("N1").orElseThrow();
+        Graph.Node n2 = graph.findNodeById("N2").orElseThrow();
+        assertTrue(solution.path().contains(n1));
+        assertTrue(solution.path().contains(n2));
     }
 
     @Test
     void getNextVert_ShouldReturnFirstVert() {
-        DijkstraAlgo.DijVert nextV = classUnderTest.getNextVert().orElseThrow();
-        assertEquals("V1", nextV.getGVert().getName());
+        DijkstraAlgo.DNode nextV = classUnderTest.getNext().orElseThrow();
+        assertEquals("N1", nextV.getGNode().getId());
     }
 
     @Test
     void gGetNextVert_allVisited_ShouldReturnEmpty() {
-        classUnderTest.getDijVertices().forEach(v -> v.setVisited(true));
-        Optional<DijkstraAlgo.DijVert> nextV = classUnderTest.getNextVert();
+        classUnderTest.getDNodes().forEach(v -> v.setVisited(true));
+        Optional<DijkstraAlgo.DNode> nextV = classUnderTest.getNext();
         assertTrue(nextV.isEmpty());
     }
 

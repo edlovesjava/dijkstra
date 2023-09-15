@@ -2,11 +2,11 @@ package com.wentware.test.djikstra;
 
 public final class Fixture {
     static final String[] GRAPH_DEF = {
-            "V1,V2,3",
-            "V1,V3,4",
-            "V2,V3,2",
-            "V2,V4,1",
-            "V3,V4,2"
+            "N1,N2,3",
+            "N1,N3,4",
+            "N2,N3,2",
+            "N2,N4,1",
+            "N3,N4,2"
     };
 
     private Fixture() {
@@ -15,15 +15,15 @@ public final class Fixture {
 
     public static Graph createTestGraph() {
         Graph testGraph = new Graph();
-        Vert vert4 = testGraph.addVert("V4");
-        Vert vert3 = testGraph.addVert("V3")
-                .addEdgeTo(vert4, 2);
-        Vert vert2 = testGraph.addVert("V2")
-                .addEdgeTo(vert4, 1)
-                .addEdgeTo(vert3,2);
-        testGraph.addVert("V1")
-                .addEdgeTo(vert2, 3)
-                .addEdgeTo(vert3,4);
+        Graph.Node n4 = testGraph.addNode("N4");
+        Graph.Node n3 = testGraph.addNode("N3")
+                .addEdgeTo(n4, 2);
+        Graph.Node n2 = testGraph.addNode("N2")
+                .addEdgeTo(n4, 1)
+                .addEdgeTo(n3,2);
+        testGraph.addNode("N1")
+                .addEdgeTo(n2, 3)
+                .addEdgeTo(n3,4);
         return testGraph;
     }
 }

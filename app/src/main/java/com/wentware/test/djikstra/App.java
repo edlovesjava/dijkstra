@@ -17,13 +17,18 @@ public class App {
     }
 
     private int run(String[] args)  {
-        out.println("Starting Graph");
+        out.println("Starting dijkstra path finder");
         try {
-            String sourceVertName = args[0];
-            String destVertName = args[1];
+            if (args.length < 3) {
+                System.out.println("cmd ::= sourceNodeId destNodeId edgeTriplet...");
+                System.out.println("edgeTriplet :: fromNodeId,toNodeId,weight");
+                System.exit(1);
+            }
+            String sourceNodeId = args[0];
+            String destNodeId = args[1];
             String[] remainingArgs = Arrays.copyOfRange(args, 2, args.length);
             Graph graph = parse(remainingArgs);
-            DijkstraAlgo algo = new DijkstraAlgo(graph, sourceVertName, destVertName);
+            DijkstraAlgo algo = new DijkstraAlgo(graph, sourceNodeId, destNodeId);
             DijkstraAlgo.Solution solution = algo.traverse();
             out.println("Cost was " + solution.cost());
             out.println("Path was " + solution.path());
@@ -45,11 +50,11 @@ public class App {
 
                 if (parts.length == 3) {
 
-                    Vert from = graph.addVert(parts[0]);
-                    Vert to = graph.addVert(parts[1]);
+                    Graph.Node from = graph.addNode(parts[0]);
+                    Graph.Node to = graph.addNode(parts[1]);
                     int weight = Integer.parseInt(parts[2]);
                     from.addEdgeTo(to, weight);
-                    //assume edge, add any new verts
+                    //assume edge, add any new nodes
                 } else {
                     String message = String.format("could not parse line %s", line);
                     throw new Exception(message);

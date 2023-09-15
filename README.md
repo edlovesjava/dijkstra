@@ -3,8 +3,8 @@ simple impl of dijkstra pathfinder alg on jdk 17+
 
 command line 
 ```bnf
-<cmd> ::= <source_vertex_name> <target_vertex name> <edge_triplet>*
-<edge_triplet> ::= <from_vertex_name> "," <to_vertex_name> "," <weight>
+<cmd> ::= <source_node_id> <target_node_id> <edge_triplet>*
+<edge_triplet> ::= <from_noe_id> "," <to_node_id> "," <weight>
 ```
 
 # build

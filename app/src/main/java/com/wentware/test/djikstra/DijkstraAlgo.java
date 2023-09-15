@@ -13,56 +13,56 @@ import static java.util.function.Predicate.not;
 
 @Data
 public class DijkstraAlgo {
-    final String sourceName;
-    final String goalName;
+    final String sourceNodeId;
+    final String goalNodeId;
     final Graph graph;
 
-    List<DijVert> dijVertices;
-    DijVert dijSource;
-    DijVert dijGoal;
+    List<DNode> dNodes;
+    DNode sourceDNode;
+    DNode goalDNode;
 
-    public DijkstraAlgo(Graph g, String sourceName, String goalName) throws Exception {
+    public DijkstraAlgo(Graph g, String sourceNodeId, String goalNodeId) throws Exception {
          this.graph = g;
-         this.sourceName = sourceName;
-         this.goalName = goalName;
+         this.sourceNodeId = sourceNodeId;
+         this.goalNodeId = goalNodeId;
          init();
     }
 
-    private static Exception getNoSourceException(String sourceName) {
-        return new Exception(String.format("Failed to find source by name %s", sourceName));
+    private static Exception getNoSourceException(String nodeId) {
+        return new Exception(String.format("Failed to find source by name %s", nodeId));
     }
 
-    private static Exception getNoGoalException(String goalName) {
-        return new Exception(String.format("Failed to find goal by name %s",goalName));
+    private static Exception getNoGoalException(String nodeId) {
+        return new Exception(String.format("Failed to find goal by name %s",nodeId));
     }
 
     private void init() throws Exception {
-        dijVertices = graph.getVertices()
+        dNodes = graph.getNodes()
                 .stream()
-                .map(DijVert::new)
+                .map(DNode::new)
                 .toList();
-        dijSource = findDijVertByGVert(graph.findVertByName(getSourceName()).orElseThrow(() -> getNoSourceException(getSourceName())));
-        dijSource.setCostFromSource(0);
-        dijGoal = findDijVertByGVert(graph.findVertByName(getGoalName()).orElseThrow(() -> getNoGoalException(getGoalName())));
+        sourceDNode = findDNodeByNode(graph.findNodeById(getSourceNodeId()).orElseThrow(() -> getNoSourceException(getSourceNodeId())));
+        sourceDNode.setCostFromSource(0);
+        goalDNode = findDNodeByNode(graph.findNodeById(getGoalNodeId()).orElseThrow(() -> getNoGoalException(getGoalNodeId())));
     }
 
     public Solution traverse() throws Exception {
 
         while (true) {
-            Optional<DijVert> currentVertOpt = getNextVert();
+            Optional<DNode> currentDNodeOpt = getNext();
 
-            if (currentVertOpt.isPresent()) {
-                DijVert currentVert = currentVertOpt.get();
-                if (!getDijGoal().equals(currentVert)) { // keep looking
-                    visitAll(currentVert);
+            if (currentDNodeOpt.isPresent()) {
+                DNode current = currentDNodeOpt.get();
+                if (!getGoalDNode().equals(current)) { // keep looking
+                    visitAll(current);
                 } else {
                     //im done?
-                    if (currentVert.getPrevDVert() == null) {
+                    if (current.getPrevDNode() == null) {
                         throw new Exception("Failed to find path with bad graph");
                     }
-                    int costFromSource = currentVert.getCostFromSource();
-                    out.println("Found " + currentVert.getGVert().getName() + " with weight " + costFromSource);
-                    List<Vert> path = computePath(currentVert);
+                    int costFromSource = current.getCostFromSource();
+                    out.println("Found " + current.getGNode().getId() + " with weight " + costFromSource);
+                    List<Graph.Node> path = computePath(current);
                     return new Solution(path, costFromSource);
                 }
             } else {
@@ -72,65 +72,64 @@ public class DijkstraAlgo {
         }
     }
 
-    Optional<DijVert> getNextVert() {
+    Optional<DNode> getNext() {
         //not yet visited, lowest
-        return this.dijVertices
+        return this.dNodes
                 .stream()
-                .filter(not(DijVert::isVisited))
-                .min(Comparator.comparingInt(DijVert::getCostFromSource));
+                .filter(not(DNode::isVisited))
+                .min(Comparator.comparingInt(DNode::getCostFromSource));
 
     }
 
-    private List<Vert> computePath(DijVert currentVert) {
-        List<Vert> path = new ArrayList<>();
-        DijVert backVert = currentVert.getPrevDVert();
+    private List<Graph.Node> computePath(DNode dNode) {
+        List<Graph.Node> path = new ArrayList<>();
+        DNode backDNode = dNode.getPrevDNode();
         do {
-            out.println("Came from vert " + backVert.getGVert().getName());
-            path.add(backVert.getGVert());
-            backVert = backVert.getPrevDVert();
-        } while (backVert != null);
+            path.add(backDNode.getGNode());
+            backDNode = backDNode.getPrevDNode();
+        } while (backDNode != null);
         return path;
     }
 
-    private void visitAll(DijVert fromVert) {
-        for(Edge e : fromVert.getGVert().getEdges()) {
-            DijVert toVert = findDijVertByGVert(e.getToVert());
-            visit(toVert, fromVert, e.getWeight());
+    private void visitAll(DNode fromDNode) {
+        for(Graph.Edge e : fromDNode.getGNode().getEdges()) {
+            DNode toDNode = findDNodeByNode(e.getToNode());
+            visit(fromDNode, toDNode, e.getWeight());
         }
-        fromVert.setVisited(true);
+        fromDNode.setVisited(true);
     }
 
-    private void visit(DijVert dijVert, DijVert fromVert, int edgeWeight) {
-        if (fromVert != null) {
-            int newCost = fromVert.getCostFromSource() + edgeWeight;
-            if (newCost < dijVert.getCostFromSource()) {
-                dijVert.updateCost(fromVert, newCost);
+    private void visit(DNode fromDNode, DNode toDNode, int edgeWeight) {
+        if (fromDNode != null) {
+            int newCost = fromDNode.getCostFromSource() + edgeWeight;
+            if (newCost < toDNode.getCostFromSource()) {
+                toDNode.updateCost(fromDNode, newCost);
             }
         }
     }
 
-    private DijVert findDijVertByGVert(Vert gVert) {
-        return dijVertices.stream()
-                .filter(dv -> dv.getGVert().equals(gVert))
+    private DNode findDNodeByNode(Graph.Node gNode) {
+        return dNodes.stream()
+                .filter(dv -> dv.getGNode().equals(gNode))
                 .findFirst()
                 .orElseThrow();
     }
 
     @Data
     @RequiredArgsConstructor
-    static class DijVert {
-        final Vert gVert;
-        DijVert prevDVert;
+    static class DNode {
+        final Graph.Node gNode;
+        DNode prevDNode;
         int costFromSource = Integer.MAX_VALUE;
         boolean visited;
 
-        private void updateCost(DijVert fromVert, int newWeight) {
+        private void updateCost(DNode fromDNode, int newWeight) {
             setCostFromSource(newWeight);
-            setPrevDVert(fromVert);
+            setPrevDNode(fromDNode);
         }
     }
 
-    record Solution(List<Vert> path, int cost) {
+    record Solution(List<Graph.Node> path, int cost) {
     }
 
 }

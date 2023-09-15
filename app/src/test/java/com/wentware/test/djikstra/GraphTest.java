@@ -7,22 +7,22 @@ import static org.junit.jupiter.api.Assertions.*;
 class GraphTest {
 
     @Test
-    void addVertByName_withDup_shouldNotAddDup() {
+    void addNOdeById_withDup_shouldNotAddDup() {
         Graph graph = new Graph();
-        graph.addVert("V1");
-        graph.addVert("V1");
+        graph.addNode("V1");
+        graph.addNode("V1");
 
-        assertEquals(1, graph.getVertices().size());
+        assertEquals(1, graph.getNodes().size());
     }
 
     @Test
-    void findVertByName() {
+    void findNodeById() {
         Graph graph = new Graph();
-        graph.addVert("V1");
-        graph.addVert("V2");
+        graph.addNode("V1");
+        graph.addNode("V2");
 
-        assertTrue(graph.findVertByName("V1").isPresent());
-        assertNotNull(graph.findVertByName("V2").orElseThrow());
-        assertTrue(graph.findVertByName("V3").isEmpty());
+        assertTrue(graph.findNodeById("V1").isPresent());
+        assertNotNull(graph.findNodeById("V2").orElseThrow());
+        assertTrue(graph.findNodeById("V3").isEmpty());
     }
 }

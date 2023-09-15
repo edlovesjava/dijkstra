@@ -26,14 +26,14 @@ class AppTest {
 
         Graph g = classUnderTest.parse(args);
         assertNotNull(g);
-        assertEquals(4, g.getVertices().size());
-        Vert v1 = g.findVertByName("V1").orElseThrow();
-        assertEquals(2, v1.getEdges().size());
-        Vert v2 = g.findVertByName("V2").orElseThrow();
-        assertEquals(2, v2.getEdges().size());
-        Vert v3 = g.findVertByName("V3").orElseThrow();
-        assertEquals(1, v3.getEdges().size());
-        assertNotNull(v3.getEdges().stream().filter(e -> "V4".equals(e.getToVert().getName())).findFirst());
+        assertEquals(4, g.getNodes().size());
+        Graph.Node n1 = g.findNodeById("N1").orElseThrow();
+        assertEquals(2, n1.getEdges().size());
+        Graph.Node n2 = g.findNodeById("N2").orElseThrow();
+        assertEquals(2, n2.getEdges().size());
+        Graph.Node n3 = g.findNodeById("N3").orElseThrow();
+        assertEquals(1, n3.getEdges().size());
+        assertNotNull(n3.getEdges().stream().filter(e -> "N4".equals(e.getToNode().getId())).findFirst());
     }
 
     @Test
@@ -48,14 +48,14 @@ class AppTest {
         assertEquals(4,solution.cost());
         assertEquals(2, solution.path().size());
         Graph graph = algo.getGraph();
-        Vert v1 = graph.findVertByName("V1").orElseThrow();
-        Vert v2 = graph.findVertByName("V2").orElseThrow();
-        assertTrue(solution.path().contains(v1));
-        assertTrue(solution.path().contains(v2));
+        Graph.Node n1 = graph.findNodeById("N1").orElseThrow();
+        Graph.Node n2 = graph.findNodeById("N2").orElseThrow();
+        assertTrue(solution.path().contains(n1));
+        assertTrue(solution.path().contains(n2));
     }
 
     private DijkstraAlgo createAlgo() throws Exception {
         Graph graph = Fixture.createTestGraph();
-        return new DijkstraAlgo(graph,"V1", "V4");
+        return new DijkstraAlgo(graph,"N1", "N4");
     }
 }

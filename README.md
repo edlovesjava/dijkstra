@@ -14,8 +14,8 @@ command line
 # test
 example graph
 
-![example graph](./Drawing.png)
+![example graph](./Drawing2.png)
 
 # run
 ```bash
-java  -jar app/build/libs/app-all.jar N1 N4 N1,N2,3 N1,N3,2 N2,N3,5 N2,N4,2 N3,N4,4```
+java  -jar app/build/libs/app-all.jar N1 N4 N1,N2,3 N1,N3,2 N2,N3,1 N2,N4,2 N3,N4,4```
